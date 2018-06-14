@@ -1,0 +1,82 @@
+import requests
+
+
+import hashlib
+
+
+import hmac
+
+
+import datetime
+
+
+import time
+
+
+import sys
+
+
+reload(sys)
+
+
+sys.setdefaultencoding('utf-8')
+
+
+　
+
+
+if ( len(sys.argv) != 6 ):
+
+
+	print "Aruments are missing"
+
+
+	sys.exit(2)
+
+
+encryptionKey = sys.argv[5]
+
+
+accessKey = sys.argv[4]
+
+
+timestamp = datetime.datetime.strftime(datetime.datetime.utcnow(), "%Y-%m-%dT%H:%M:%SZ")
+
+
+payload = accessKey + timestamp
+
+
+signature = hmac.new(encryptionKey, payload, digestmod=hashlib.sha256)
+
+
+　
+
+
+#Actual API call
+
+
+#url = "https://api.economy.com/data/v1/orders?type=baskets&action=run&id="+sys.argv[3]
+
+
+url = "https://wstestb2bext.usaa.com/economy/data/v1/orders?type=baskets&action=run&id="+sys.argv[3]
+
+
+head = {"AccessKeyId":accessKey,"Signature":signature.hexdigest(),"TimeStamp":timestamp}
+
+
+resp = requests.get(url,headers=head)
+
+
+time.sleep(60)
+
+
+file=sys.argv[1]+"/"+sys.argv[2]
+
+
+f= open(file,'w')
+
+
+f.write(resp.text)
+
+
+f.close()
