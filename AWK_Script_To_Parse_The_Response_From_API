@@ -1,0 +1,463 @@
+#!/bin/ksh
+
+
+#---------------------------------------------------------------------------------------
+
+
+# run_<project_name>_Format_Script.ksh
+
+
+#----------------------------------------------------------------------------------------
+
+
+# Call this script to Remove unwanted collumnS based on Keyword, Transpose rows into Columns. This script developed to process Moody's API reposne data. 
+
+
+#
+
+
+# Parameter1: Input File Directory
+
+
+# Parameter2: Input File Name
+
+
+# Parameter3: Output File Directory.
+
+
+# Parameter4: Valid DataFind Header Row (Eg, Value can be 2, if Row 2 has keyword through which unwanted columns can be eliminated.
+
+
+# Parameter5: Header_Count(Total No of header rows in a file)
+
+
+#
+
+
+################################################################################
+
+
+　
+
+
+InputFileDirectory=$1
+
+
+InputFile=$2
+
+
+OutputFileDirectory=$3
+
+
+pValidDataFindHeader=$4
+
+
+pHeaderCount=$5
+
+
+　
+
+
+　
+
+
+　
+
+
+AbsInputFile=`echo $InputFile|cut -d'.' -f1`
+
+
+InputFileExt=`echo $InputFile|cut -d'.' -f2`
+
+
+　
+
+
+　
+
+
+awk -v valid_data_finder=$pValidDataFindHeader -v Header_Count=$pHeaderCount 'BEGIN{FS=",";OFS=","
+
+
+data_row=Header_Count+1} { gsub("\r","") }  NR<valid_data_finder{
+
+
+　
+
+
+# Save headers that comes before valid data finder in a two dimensional array. This array can be invoked in later step while removing unwanted columns.
+
+
+　
+
+
+	for (i=1;i<=NF;i++) 
+
+
+	{
+
+
+	arrayRow[NR,i] = $i
+
+
+	}
+
+
+nf[NR]=NF
+
+
+}
+
+
+NR==valid_data_finder {
+
+
+　
+
+
+# Below loop goes through each column in the valid data finder row , validates each column value and saves valid column value in array with colum number as index of the array.
+
+
+　
+
+
+	for(i=1;i<=NF;i++) 
+
+
+	{
+
+
+		if(index($i,"Undefined")==0) 
+
+
+		{
+
+
+		ValidCol[i]=$i
+
+
+		}
+
+
+	}
+
+
+}
+
+
+NR>valid_data_finder {
+
+
+　
+
+
+	vTemp="Temp" NR
+
+
+　
+
+
+# If part of the below control flow deals with all headers just before "valid data finder row" header, immediate row followed by it along with "valid data finder row" header. 
+
+
+# For Eg, If valid data finder row is 4 , then if part of below control flow processes rows from 1-3,4,5.
+
+
+　
+
+
+	if(NR==(valid_data_finder+1)) 
+
+
+	{
+
+
+# Below for loop deals with all headers just before "valid data finder row" header.
+
+
+# For Eg, If valid data finder row is 4 , then Below for loop processes rows from 1-3.
+
+
+		for (vrow in nf) 
+
+
+		{
+
+
+		vTemp="Temp" vrow
+
+
+			for (j=1;j<=nf[vrow];j++) 
+
+
+			{
+
+
+				if( j in ValidCol)
+
+
+				{
+
+
+				vTemp+=1
+
+
+					if(vTemp==1)
+
+
+					{
+
+
+					ColType_Value=arrayRow[vrow,j]
+
+
+					}
+
+
+					else 
+
+
+					{
+
+
+					printf("%d,%s,%s,%s\n",(vTemp-1),NR<data_row?"Header":"Data",ColType_Value,arrayRow[vrow,j]==""?"NA":arrayRow[vrow,j])
+
+
+					}
+
+
+				}
+
+
+			}
+
+
+		}
+
+
+# Below for loop deals with immediate row followed by "valid data finder row" header along with "valid data finder row" header. 
+
+
+# For Eg, If valid data finder row is 4 , then Below for loop processes rows from 4,5.
+
+
+　
+
+
+		for(k=1;k<=2;k++)
+
+
+		{
+
+
+# Below for loop deals with "valid data finder row" header. 
+
+
+# For Eg, If valid data finder row is 4 , then Below for loop processes rows from 4.
+
+
+　
+
+
+			if(k==1)
+
+
+			{	
+
+
+			vTemp="Temp" valid_data_finder
+
+
+			vTemp=0
+
+
+				for(i=1;i<=nf[1];i++)
+
+
+				{
+
+
+					if(i in ValidCol)
+
+
+					{
+
+
+					vTemp+=1
+
+
+						if(vTemp==1)
+
+
+						{
+
+
+						ColType_Value=ValidCol[i]
+
+
+						}
+
+
+						else 
+
+
+						{
+
+
+						printf("%d,%s,%s,%s\n",(vTemp-1),NR<data_row?"Header":"Data",ColType_Value,ValidCol[i]==""?"NA":ValidCol[i])
+
+
+						}
+
+
+					}
+
+
+				}
+
+
+			}
+
+
+			else
+
+
+			{
+
+
+　
+
+
+# Below for loop deals with immediate row followed by "valid data finder row" header. 
+
+
+# For Eg, If valid data finder row is 4 , then Below for loop processes rows from 5.
+
+
+　
+
+
+			vTemp=0
+
+
+				for(i=1;i<=nf[1];i++)
+
+
+				{
+
+
+					if(i in ValidCol)
+
+
+					{
+
+
+					vTemp+=1
+
+
+						if(vTemp==1)
+
+
+						{
+
+
+						ColType_Value=$i
+
+
+						}
+
+
+						else 
+
+
+						{
+
+
+						printf("%d,%s,%s,%s\n",(vTemp-1),NR<data_row?"Header":"Data",ColType_Value,$i==""?"NA":$i)
+
+
+						}
+
+
+					}
+
+
+				}
+
+
+			}
+
+
+		}
+
+
+	}
+
+
+	else 
+
+
+	{
+
+
+	vTemp=0
+
+
+# Below for loop deals with rows followed by "valid data finder row" header. 
+
+
+# For Eg, If valid data finder row is 4 , then Below for loop processes rows from 6.
+
+
+　
+
+
+		for(i=1;i<=nf[1];i++)
+
+
+		{
+
+
+			if(i in ValidCol)
+
+
+			{
+
+
+			vTemp+=1
+
+
+				if(vTemp==1)
+
+
+				{
+
+
+				ColType_Value=$i
+
+
+				}
+
+
+				else 
+
+
+				{
+
+
+				printf("%d,%s,%s,%s\n",(vTemp-1),NR<data_row?"Header":"Data",ColType_Value,$i==""?"NA":$i)
+
+
+				}
+
+
+			}
+
+
+		}
+
+
+	}
+
+
+} '  $InputFileDirectory/$InputFile> $OutputFileDirectory/$AbsInputFile"_Formatted."$InputFileExt
