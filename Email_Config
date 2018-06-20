@@ -1,0 +1,3 @@
+
+JABEE84382221,FPNA,EEM_FPNA,Forecast Scenario,Reload Enriched Reporting Cube,N,N,Y,Y,N,N,Reload Enriched Reporting Cube,,,,Process to Clear Forecast data from FPNAER cube,2/3,Please check the Control-M Output log for the failure reason,Please contact M&P support team to fix the issue and  restart the Job
+JABEE84382221,FPNA,EEM_FPNA,Forecast Scenario,Reload Enriched Reporting Cube,N,N,Y,Y,N,N,Reload Enriched Reporting Cube,,,,Process to Clear Forecast data from FPNAER cube,2/3,Please check the Control-M Output log for the failure reason,Please contact M&P support team to fix the issue and  restart the Job
