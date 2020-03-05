@@ -1,0 +1,7 @@
+Query to return those accounts for whcih all the customers present in customer tables.
+If an account is joint account and we need to bring that account only if those customers present in customer table.
+
+WITH N_ACCT_REL AS  ( SELECT N_ACCT ,N_REL, C_ACCT_HLDR_TYP,C_SRC_SYS,C_CCY FROM  ODSMAIN.UM_REL_ACCT_CUST A 
+WHERE NOT EXISTS (SELECT N_REL FROM ODSMAIN.UM_MST_CUST B WHERE A.N_REL=B.N_REL ) AND A.C_SRC_SYS='HGN'  ),
+SELECT N_ACCT ,N_REL, C_ACCT_HLDR_TYP,C_SRC_SYS,C_CCY FROM  ODSMAIN.UM_REL_ACCT_CUST B WHERE  NOT EXISTS (SELECT 'X' FROM N_ACCT_REL C
+WHERE C.N_ACCT=B.N_ACCT )  AND B.C_SRC_SYS='HGN'
